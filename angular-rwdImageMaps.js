@@ -61,7 +61,9 @@ angular.module('rwdImageMaps',[])
 							$this.attr(c, coordsPercent.toString());
 						});
 					}
-					angular.element($window).resize(resize).trigger('resize');
+					angular.element($window).on('resize', function() {
+						resize();
+					});
 				});
 			}
 		};
