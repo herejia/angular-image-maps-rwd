@@ -2,7 +2,7 @@
 * rwdImageMaps AngularJS Directive v1.0
 *
 * Allows image maps to be used in a responsive design by recalculating the area coordinates to match the actual image size on load and window.resize
-* 
+*
 * Original Copyright (c) 2013 Matt Stow
 * https://github.com/stowball/jQuery-rwdImageMaps
 * http://mattstow.com
@@ -17,12 +17,13 @@ angular.module('rwdImageMaps',[])
 	.directive('rwdimgmap', ['$window', function($window){
 		return{
 			restrict: 'CA',
-			link:function(scope, element, attrs){
-				element.bind('load', function() {
+			link: function(scope, elements, attrs){
+			    var element = elements[0];
+				element.addEventListener('load', function() {
 
-					var w = $(element).attr('width'),
-						h = $(element).attr('height');
-						
+					var w = element.width,
+						h = element.height;
+
 					function resize(){
 						if (!w || !h) {
 							var temp = new Image();
@@ -35,22 +36,22 @@ angular.module('rwdImageMaps',[])
 							if (!h)
 								h = temp.height;
 						}
-						
+
 						var wPercent = $(element).width()/100,
 							hPercent = $(element).height()/100,
 							map = attrs.usemap.replace('#', ''),
 							c = 'coords';
-						
+
 						angular.element('map[name="' + map + '"]').find('area').each(function(){
 							var $this = $(this);
-							
+
 							if (!$this.data(c)){
 								$this.data(c, $this.attr(c));
 							}
-								
+
 							var coords = $this.data(c).split(','),
 								coordsPercent = new Array(coords.length);
-							
+
 							for (var i = 0; i<coordsPercent.length; ++i){
 								if (i % 2 === 0){
 									coordsPercent[i] = parseInt(((coords[i]/w)*100)*wPercent);
@@ -64,6 +65,7 @@ angular.module('rwdImageMaps',[])
 					angular.element($window).on('resize', function() {
 						resize();
 					});
+					resize();
 				});
 			}
 		};
