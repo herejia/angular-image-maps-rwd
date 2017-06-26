@@ -14,59 +14,52 @@
 */
 
 angular.module('rwdImageMaps',[])
-	.directive('rwdimgmap', ['$window', function($window){
-		return{
-			restrict: 'CA',
-			link: function(scope, elements, attrs){
-			    var element = elements[0];
-				element.addEventListener('load', function() {
+    .directive('rwdimgmap', ['$window', function($window){
+        return{
+            restrict: 'CA',
+            link: function(scope, elements, attrs){
+                var element = elements[0];
+                element.addEventListener('load', function() {
+                    var clone = new Image();
+                    clone.src = element.src || element.getAttribute('ng-src');
+                    // Once element.ngSrc is resolved, we can load a clone image
+                    clone.addEventListener('load', function() {
+                        // Once the clone is loaded, we can retrieve the original image width
+                        var w = clone.width;
+                        var h = clone.height;
 
-					var w = element.width,
-						h = element.height;
+                        function resize(){
+                            var wPercent = $(element).width()/100,
+                                hPercent = $(element).height()/100,
+                                map = attrs.usemap.replace('#', ''),
+                                c = 'coords';
 
-					function resize(){
-						if (!w || !h) {
-							var temp = new Image();
-							temp.src = $(element).attr('src');
-							if(temp.src == undefined)
-								temp.src = $(element).attr('ng-src');
+                            angular.element('map[name="' + map + '"]').find('area').each(function(){
+                                var $this = $(this);
 
-							if (!w)
-								w = temp.width;
-							if (!h)
-								h = temp.height;
-						}
+                                if (!$this.data(c)){
+                                    $this.data(c, $this.attr(c));
+                                }
 
-						var wPercent = $(element).width()/100,
-							hPercent = $(element).height()/100,
-							map = attrs.usemap.replace('#', ''),
-							c = 'coords';
+                                var coords = $this.data(c).split(','),
+                                    coordsPercent = new Array(coords.length);
 
-						angular.element('map[name="' + map + '"]').find('area').each(function(){
-							var $this = $(this);
-
-							if (!$this.data(c)){
-								$this.data(c, $this.attr(c));
-							}
-
-							var coords = $this.data(c).split(','),
-								coordsPercent = new Array(coords.length);
-
-							for (var i = 0; i<coordsPercent.length; ++i){
-								if (i % 2 === 0){
-									coordsPercent[i] = parseInt(((coords[i]/w)*100)*wPercent);
-								} else {
-									coordsPercent[i] = parseInt(((coords[i]/h)*100)*hPercent);
-								};
-							};
-							$this.attr(c, coordsPercent.toString());
-						});
-					}
-					angular.element($window).on('resize', function() {
-						resize();
-					});
-					resize();
-				});
-			}
-		};
-	}]);
+                                for (var i = 0; i<coordsPercent.length; ++i){
+                                    if (i % 2 === 0){
+                                        coordsPercent[i] = parseInt(((coords[i]/w)*100)*wPercent);
+                                    } else {
+                                        coordsPercent[i] = parseInt(((coords[i]/h)*100)*hPercent);
+                                    };
+                                };
+                                $this.attr(c, coordsPercent.toString());
+                            });
+                        }
+                        angular.element($window).on('resize', function() {
+                            resize();
+                        });
+                        resize();
+                    });
+                });
+            }
+        };
+    }]);
